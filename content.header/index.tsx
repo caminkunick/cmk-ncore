@@ -4,6 +4,7 @@ import {
   BreadcrumbsProps,
   Link as MLink,
   Skeleton,
+  Stack,
   Typography,
 } from "@mui/material";
 import { Container } from "./container";
@@ -83,6 +84,7 @@ export const ContentHeader = ({
         <Typography
           variant="h3"
           color={label ? "textPrimary" : "textSecondary"}
+          fontWeight="bold"
         >
           {props.loading ? <Skeleton width={"50%"} /> : label || "No title"}
         </Typography>
@@ -97,7 +99,11 @@ export const ContentHeader = ({
           </Typography>
         )}
       </Box>
-      {Boolean(actions) && <div>{actions}</div>}
+      {Boolean(actions) && (
+        <Stack direction="row" spacing={1}>
+          {actions}
+        </Stack>
+      )}
     </Container>
   );
 };

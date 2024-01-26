@@ -43,7 +43,16 @@ declare module "@mui/material/Button" {
   }
 }
 
+declare module "@mui/material/IconButton" {
+  interface IconButtonPropsColorOverrides {
+    neutral: true;
+  }
+}
+
+export * from "./action.icon";
 export * from "./main.container";
+export * from "./popup";
+export * from "./table.grid";
 
 // SECTION - Core
 export namespace Core {
@@ -53,6 +62,7 @@ export namespace Core {
     | { type: "app"; value: FirebaseApp }
     | { type: "user"; value: User | null }
     | { type: "alert/add"; value: Partial<AlertDocument> }
+    | { type: "alert/error"; value: string }
     | { type: "alert/remove"; value: string }
     | { type: "popup"; value: Partial<PopupDocument> | null };
   export class State {
@@ -93,6 +103,22 @@ export namespace Core {
       };
     }
 
+    User() {
+      return {
+        loaded: () => this.user !== "loading",
+        loggedIn: () => this.user !== "loading" && this.user !== null,
+        get: (): User => {
+          if (this.user === "loading") {
+            throw new Error("User not loaded");
+          }
+          if (this.user === null) {
+            throw new Error("User not logged in");
+          }
+          return this.user;
+        },
+      };
+    }
+
     static reducer(s: State, a: StateAction): State {
       switch (a.type) {
         case "dark":
@@ -106,6 +132,8 @@ export namespace Core {
           return s.Set("user", a.value);
         case "alert/add":
           return s.Alert().add(a.value);
+        case "alert/error":
+          return s.Alert().add({ label: a.value, severity: "error" });
         case "alert/remove":
           return s.Alert().remove(a.value);
         case "popup":
@@ -166,6 +194,26 @@ export namespace Core {
           <ThemeProvider
             theme={createTheme({
               palette: {
+                primary: {
+                  // google blue
+                  main: "#4285f4",
+                },
+                success: {
+                  // google green
+                  main: "#34a853",
+                },
+                error: {
+                  // google red
+                  main: "#ea4335",
+                },
+                warning: {
+                  // google yellow
+                  main: "#fbbc05",
+                },
+                info: {
+                  // google blue
+                  main: "#4285f4",
+                },
                 neutral: { main: grey[500] },
                 mode: state.dark ? "dark" : "light",
               },

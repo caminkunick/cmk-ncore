@@ -25,6 +25,12 @@ export const ActionIcon = styled(
     width: 48,
     height: 48,
   },
+  "&.MuiIconButton-sizeSmall": {
+    padding: 2,
+  },
+  ".MuiSvgIcon-root": {
+    fontSize: "inherit",
+  },
 });
 
 export default ActionIcon;

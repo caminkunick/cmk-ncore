@@ -18,9 +18,9 @@ import { useMC } from "./ctx";
 import { signOut, updateProfile } from "firebase/auth";
 import { ProfileMenuNotSignListItem } from "./profile.menu.not.sign";
 import { Fragment, useCallback, useState } from "react";
-import { StockImageTypes, StockPicker } from "../stock.picker";
+import { StockImageDocument, StockPicker } from "../stock.picker";
 import ActionIcon from "../action.icon";
-import { Camera, Edit, InfoRounded, Logout, Settings } from "@mui/icons-material";
+import { CameraAlt, Edit, InfoRounded, Logout } from "@mui/icons-material";
 import { Core } from "..";
 import { UserStatic } from "../ctrls/user.static";
 
@@ -54,12 +54,10 @@ export const MCProfileMenu = () => {
       },
     });
   };
-  const handleChangePhotoURL = async (images: StockImageTypes[]) => {
+  const handleChangePhotoURL = async (images: StockImageDocument[]) => {
     if (images[0] && user !== "loading" && user) {
-      const { _id } = images[0];
-      await updateProfile(user, {
-        photoURL: `https://s1.phra.in:8086/file/id/${_id}/medium`,
-      });
+      const { medium: photoURL } = images[0];
+      await updateProfile(user, { photoURL });
       dispatch({ type: "user", value: user });
     }
   };
@@ -109,7 +107,7 @@ export const MCProfileMenu = () => {
                   }}
                   onClick={() => setOpen(true)}
                 >
-                  <Camera />
+                  <CameraAlt />
                 </IconButton>
               }
             >
@@ -131,7 +129,11 @@ export const MCProfileMenu = () => {
               }}
             />
             <ListItemSecondaryAction>
-              <ActionIcon icon={<Edit />} onClick={handleChangeDisplayName} />
+              <ActionIcon
+                icon={<Edit />}
+                color="warning"
+                onClick={handleChangeDisplayName}
+              />
               {user !== "loading" && user?.email && (
                 <Tooltip title={user.email}>
                   <IconButton size="small">
@@ -147,7 +149,7 @@ export const MCProfileMenu = () => {
           {user ? (
             <Fragment>
               <ListItemButtonErrorStyled dense onClick={handleSignOut}>
-                <ListItemIcon sx={{color:'inherit'}}>
+                <ListItemIcon sx={{ color: "inherit" }}>
                   <Logout />
                 </ListItemIcon>
                 <ListItemText primary={"Sign Out"} />

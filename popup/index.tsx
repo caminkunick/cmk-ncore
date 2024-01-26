@@ -3,6 +3,7 @@ import { DialogStyled } from "./dialog.styles";
 import { Core } from "..";
 import { DialogContent, Stack } from "@mui/material";
 import { PopupEnhance as Ui } from "./enhance";
+import { Delete } from "@mui/icons-material";
 
 export class PopupDocument {
   title: React.ReactNode = "";
@@ -15,6 +16,16 @@ export class PopupDocument {
 
   constructor(data?: Partial<PopupDocument>) {
     Object.assign(this, data);
+  }
+
+  static Remove(title: string, onConfirm: () => void): PopupDocument {
+    return new PopupDocument({
+      title: "Remove",
+      text: `Are you sure you want to remove "${title}"?`,
+      type: "remove",
+      icon: <Delete fontSize="inherit" />,
+      onConfirm: () => onConfirm(),
+    });
   }
 }
 
