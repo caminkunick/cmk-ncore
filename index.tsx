@@ -52,6 +52,7 @@ declare module "@mui/material/IconButton" {
 }
 
 export * from "./action.icon";
+export * from "./content.header";
 export * from "./main.container";
 export * from "./popup";
 export * from "./table.grid";
