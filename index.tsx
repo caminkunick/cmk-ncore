@@ -9,6 +9,7 @@ import {
 } from "react";
 import {
   CssBaseline,
+  ThemeOptions,
   ThemeProvider,
   createTheme,
   useMediaQuery,
@@ -19,6 +20,7 @@ import { Firestore, getFirestore } from "firebase/firestore";
 import { AlertDocument, Alerts } from "./alerts";
 import { Popup, PopupDocument } from "./popup";
 import { grey } from "@mui/material/colors";
+import { deepmerge } from "@mui/utils";
 
 declare module "@mui/material/styles/createMixins" {
   interface Mixins {
@@ -64,7 +66,8 @@ export namespace Core {
     | { type: "alert/add"; value: Partial<AlertDocument> }
     | { type: "alert/error"; value: string }
     | { type: "alert/remove"; value: string }
-    | { type: "popup"; value: Partial<PopupDocument> | null };
+    | { type: "popup"; value: Partial<PopupDocument> | null }
+    | { type: "profileMenu"; value: ReactNode };
   export class State {
     app: FirebaseApp | null = null;
     auth: Auth | null = null;
@@ -79,7 +82,7 @@ export namespace Core {
     user: "loading" | User | null = "loading";
     alerts: AlertDocument[] = [];
     popup: PopupDocument | null = null;
-    dark: boolean = false;
+    dark: boolean = true;
 
     constructor(data?: Partial<State>) {
       Object.assign(this, data);
@@ -138,6 +141,8 @@ export namespace Core {
           return s.Alert().remove(a.value);
         case "popup":
           return s.Set("popup", a.value ? new PopupDocument(a.value) : null);
+        case "profileMenu":
+          return s.Set("profileMenu", a.value);
         default:
           return s;
       }
@@ -169,73 +174,93 @@ export namespace Core {
   export const connect =
     <T extends ContextValue = ContextValue>(
       Comp: ComponentType<T>,
-      app: FirebaseApp
+      app: FirebaseApp,
+      options?: Partial<{
+        theme: ThemeOptions;
+        profileMenu: ReactNode;
+      }>
     ) =>
     (props: T) => {
       const [state, dispatch] = useReducer(State.reducer, new State());
       const mobile = useMediaQuery("(max-width: 768px)");
 
       useEffect(() => {
-        dispatch({ type: "app", value: app });
-        const unwatchdark = State.watchDark((value) => {
+        return State.watchDark((value) => {
           dispatch({ type: "dark", value });
         });
+      }, []);
+
+      useEffect(() => {
+        dispatch({ type: "app", value: app });
         const unwatchuser = onAuthStateChanged(getAuth(app), (user) =>
           dispatch({ type: "user", value: user })
         );
         return () => {
-          unwatchdark();
           unwatchuser();
         };
       }, [app]);
 
+      useEffect(() => {
+        if (options?.profileMenu) {
+          dispatch({ type: "profileMenu", value: options.profileMenu });
+        }
+      }, [options]);
+
       return (
         <Context.Provider value={{ state, dispatch, mobile }}>
           <ThemeProvider
-            theme={createTheme({
-              palette: {
-                primary: {
-                  // google blue
-                  main: "#4285f4",
+            theme={createTheme(
+              deepmerge(
+                {
+                  palette: {
+                    primary: {
+                      // google blue
+                      main: "#4285f4",
+                    },
+                    success: {
+                      // google green
+                      main: "#34a853",
+                    },
+                    error: {
+                      // google red
+                      main: "#ea4335",
+                    },
+                    warning: {
+                      // google yellow
+                      main: "#fbbc05",
+                    },
+                    info: {
+                      // google blue
+                      main: "#4285f4",
+                    },
+                    neutral: { main: grey[500] },
+                    background: {
+                      default: state.dark ? "#222222" : "#f9f9f9",
+                    },
+                    mode: state.dark ? "dark" : "light",
+                  },
+                  mixins: {
+                    sidebar: {
+                      width: 272,
+                    },
+                    absoluteFluid: {
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      width: "100%",
+                      height: "100%",
+                    },
+                    flexMiddle: {
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                    },
+                  },
                 },
-                success: {
-                  // google green
-                  main: "#34a853",
-                },
-                error: {
-                  // google red
-                  main: "#ea4335",
-                },
-                warning: {
-                  // google yellow
-                  main: "#fbbc05",
-                },
-                info: {
-                  // google blue
-                  main: "#4285f4",
-                },
-                neutral: { main: grey[500] },
-                mode: state.dark ? "dark" : "light",
-              },
-              mixins: {
-                sidebar: {
-                  width: 272,
-                },
-                absoluteFluid: {
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "100%",
-                  height: "100%",
-                },
-                flexMiddle: {
-                  display: "flex",
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "center",
-                },
-              },
-            })}
+                options?.theme || {}
+              )
+            )}
           >
             <CssBaseline />
             <Comp {...props} state={state} dispatch={dispatch} />
