@@ -56,6 +56,7 @@ export * from "./content.header";
 export * from "./main.container";
 export * from "./popup";
 export * from "./table.grid";
+export * from "./title.editor";
 
 // SECTION - Core
 export namespace Core {
@@ -256,6 +257,15 @@ export namespace Core {
                       flexDirection: "column",
                       justifyContent: "center",
                       alignItems: "center",
+                    },
+                  },
+                  components: {
+                    MuiListItemIcon: {
+                      styleOverrides: {
+                        root: {
+                          minWidth: 36,
+                        },
+                      },
                     },
                   },
                 },
