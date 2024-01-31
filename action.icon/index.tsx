@@ -1,25 +1,37 @@
-import { IconButton, IconButtonProps, styled } from "@mui/material";
-import { ReactNode, forwardRef } from "react";
+import { IconButton, IconButtonProps, Tooltip, styled } from "@mui/material";
+import { ReactElement, ReactNode, forwardRef } from "react";
 import { Core } from "..";
 
-export type ActionIconProps = IconButtonProps & {
+export type ActionIconProps = Omit<IconButtonProps, "title"> & {
+  title?: string;
   icon?: ReactNode;
 };
 export const ActionIcon = styled(
-  forwardRef<HTMLButtonElement, ActionIconProps>(({ icon, ...props }, ref) => {
-    const { mobile } = Core.useCore();
+  forwardRef<HTMLButtonElement, ActionIconProps>(
+    ({ icon, title, ...props }, ref) => {
+      const { mobile } = Core.useCore();
 
-    return (
-      <IconButton
-        ref={ref}
-        size={mobile ? "medium" : "small"}
-        color="info"
-        {...props}
-      >
-        {icon ?? props.children}
-      </IconButton>
-    );
-  })
+      const Wrapper = (props: { children: ReactElement }) =>
+        title ? (
+          <Tooltip title={title}>{props.children}</Tooltip>
+        ) : (
+          <>{props.children}</>
+        );
+
+      return (
+        <Wrapper>
+          <IconButton
+            ref={ref}
+            size={mobile ? "medium" : "small"}
+            color="neutral"
+            {...props}
+          >
+            {icon ?? props.children}
+          </IconButton>
+        </Wrapper>
+      );
+    }
+  )
 )({
   "&.MuiIconButton-sizeLarge": {
     width: 48,

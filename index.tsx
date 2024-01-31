@@ -21,6 +21,7 @@ import { AlertDocument, Alerts } from "./alerts";
 import { Popup, PopupDocument } from "./popup";
 import { grey } from "@mui/material/colors";
 import { deepmerge } from "@mui/utils";
+import { StockImageDocument, StockPicker } from "./stock.picker";
 
 declare module "@mui/material/styles/createMixins" {
   interface Mixins {
@@ -53,8 +54,11 @@ declare module "@mui/material/IconButton" {
 
 export * from "./action.icon";
 export * from "./content.header";
+export * from "./dialog.compact";
+export * from "./feature.image";
 export * from "./main.container";
 export * from "./popup";
+export * from "./save.button";
 export * from "./table.grid";
 export * from "./title.editor";
 
@@ -69,7 +73,12 @@ export namespace Core {
     | { type: "alert/error"; value: string }
     | { type: "alert/remove"; value: string }
     | { type: "popup"; value: Partial<PopupDocument> | null }
-    | { type: "profileMenu"; value: ReactNode };
+    | { type: "profileMenu"; value: ReactNode }
+    | {
+        type: "picker";
+        value: ((imgs: StockImageDocument[]) => void) | null;
+        multiple?: boolean;
+      };
   export class State {
     app: FirebaseApp | null = null;
     auth: Auth | null = null;
@@ -85,6 +94,8 @@ export namespace Core {
     alerts: AlertDocument[] = [];
     popup: PopupDocument | null = null;
     dark: boolean = true;
+    picker: ((imgs: StockImageDocument[]) => void) | null = null;
+    pickerMultiple: boolean = false;
 
     constructor(data?: Partial<State>) {
       Object.assign(this, data);
@@ -145,6 +156,10 @@ export namespace Core {
           return s.Set("popup", a.value ? new PopupDocument(a.value) : null);
         case "profileMenu":
           return s.Set("profileMenu", a.value);
+        case "picker":
+          return s
+            .Set("picker", a.value)
+            .Set("pickerMultiple", Boolean(a.multiple));
         default:
           return s;
       }
@@ -157,6 +172,8 @@ export namespace Core {
       callback(mql.matches);
       return () => mql.removeEventListener("change", listener);
     }
+
+    static mobileQuery = "(max-width: 768px)";
   }
 
   // ANCHOR - Context
@@ -184,7 +201,7 @@ export namespace Core {
     ) =>
     (props: T) => {
       const [state, dispatch] = useReducer(State.reducer, new State());
-      const mobile = useMediaQuery("(max-width: 768px)");
+      const mobile = useMediaQuery(State.mobileQuery);
 
       useEffect(() => {
         return State.watchDark((value) => {
@@ -215,26 +232,11 @@ export namespace Core {
               deepmerge(
                 {
                   palette: {
-                    primary: {
-                      // google blue
-                      main: "#4285f4",
-                    },
-                    success: {
-                      // google green
-                      main: "#34a853",
-                    },
-                    error: {
-                      // google red
-                      main: "#ea4335",
-                    },
-                    warning: {
-                      // google yellow
-                      main: "#fbbc05",
-                    },
-                    info: {
-                      // google blue
-                      main: "#4285f4",
-                    },
+                    primary: { main: "#4285f4" },
+                    success: { main: "#34a853" },
+                    error: { main: "#ea4335" },
+                    warning: { main: "#fbbc05" },
+                    info: { main: "#4285f4" },
                     neutral: { main: grey[500] },
                     background: {
                       default: state.dark ? "#222222" : "#f9f9f9",
@@ -277,6 +279,15 @@ export namespace Core {
             <Comp {...props} state={state} dispatch={dispatch} />
             <Alerts />
             <Popup />
+            <StockPicker
+              open={Boolean(state.picker)}
+              onClose={() => dispatch({ type: "picker", value: null })}
+              onConfirm={(images) => {
+                state.picker?.(images);
+                dispatch({ type: "picker", value: null });
+              }}
+              multiple={state.pickerMultiple}
+            />
           </ThemeProvider>
         </Context.Provider>
       );

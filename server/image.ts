@@ -25,6 +25,12 @@ export const ServerImage = (
     } else if (body?.action === "upload") {
       const { name, mimetype, file } = body;
       return resolve(await ImageUpload(app, user, file, name, mimetype));
+    } else if (body?.action === "view") {
+      if(!body?.url) return reject("url is required");
+      const doc = await db.collection("images").where("thumbnail", "==", body.url).get();
+      if(doc.empty) return reject("image not found");
+      const image = doc.docs[0].data();
+      return resolve(image);
     }
 
     console.log(body);

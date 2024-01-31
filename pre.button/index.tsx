@@ -14,6 +14,10 @@ export namespace PreButton {
     <BaseButton color="primary" children="Confirm" {...props} />
   ))<ButtonProps>({});
 
+  export const Cancel = styled((props) => (
+    <BaseButton color="neutral" children="Cancel" {...props} />
+  ))<ButtonProps>({});
+
   export const Close = styled((props) => (
     <BaseButton color="neutral" children="Close" {...props} />
   ))<ButtonProps>({});

@@ -31,6 +31,7 @@ export class StockImageDocument {
   blurhash: string = "";
   medium: string = "";
   thumbnail: string = "";
+  original: string = "";
 
   constructor(data?: Partial<StockImageDocument>) {
     Object.assign(this, data);
@@ -61,7 +62,37 @@ export class StockImageDocument {
       }
     );
   }
+
+  static view = (user: User, url: string) => {
+    return new Promise<StockImageDocument>(async (resolve, reject) => {
+      fetch(`/api/core`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${await user.getIdToken()}`,
+        },
+        body: JSON.stringify({
+          ref: "image",
+          action: "view",
+          url,
+        }),
+      })
+        .then((res) => res.json())
+        .then((res) => resolve(new StockImageDocument(res)))
+        .catch(reject);
+    });
+  };
+
+  static posToStr(pos?: StockImagePosition): string {
+    return pos
+      ? `${typeof pos?.left === "string" ? pos.left : 50} ${
+          typeof pos?.top === "string" ? pos.top : 50
+        }`
+      : "center";
+  }
 }
+
+export type StockImagePosition = Record<"top" | "left", string>;
 
 export class StockImageController {
   user: User;
@@ -258,6 +289,7 @@ export class StockImageCtrl
   thumbnail: string;
   from: string;
   fromId: string;
+  original: string;
   credit: {
     type: string;
     value: string;
@@ -284,6 +316,7 @@ export class StockImageCtrl
     this.thumbnail = data?.thumbnail ?? "";
     this.from = "";
     this.fromId = "";
+    this.original = "";
     this.credit = null;
     this.ref = "";
   }
