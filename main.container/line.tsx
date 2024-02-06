@@ -10,20 +10,21 @@ import {
   Typography,
 } from "@mui/material";
 import { useState } from "react";
-import { useMC } from "./ctx";
 import QRCode from "react-qr-code";
-import { useCore } from "../context";
-import { Link } from "react-router-dom";
-import { PickIcon } from "../PickIcon";
+import { Link as LinkIcon } from "@mui/icons-material";
+import Link from "next/link";
+import { Core } from "..";
 
 export const MCLine = () => {
-  const { onSettingChange } = useCore();
-  const { user } = useMC();
+  const {
+    state: { user },
+  } = Core.useCore();
   const [open, setOpen] = useState<boolean>(false);
   const line = null;
 
   const handleOpen = (open: boolean) => () => setOpen(open);
-  const handleUnlink = () => onSettingChange?.("line", null);
+  const uid = (): string =>
+    user !== "loading" && user !== null ? user?.uid : "";
 
   return (
     <Box display={"flex"} alignItems={"center"}>
@@ -31,22 +32,10 @@ export const MCLine = () => {
         variant="outlined"
         size="small"
         onClick={handleOpen(true)}
-        startIcon={<PickIcon icon={"link"} />}
+        startIcon={<LinkIcon />}
       >
         {line ? "Change" : "Link"}
       </Button>
-      {line && (
-        <Button
-          variant="outlined"
-          size="small"
-          color="secondary"
-          onClick={handleUnlink}
-          startIcon={<PickIcon icon={"unlink"} />}
-          style={{ marginLeft: "0.5rem" }}
-        >
-          Unlink
-        </Button>
-      )}
       <Dialog
         fullWidth
         maxWidth="xs"
@@ -59,17 +48,17 @@ export const MCLine = () => {
         <DialogContent>
           <Box textAlign="center">
             <QRCode
-              value={`https://line.me/R/oaMessage/@920ooxaj/?register:${user.data?.uid}`}
+              value={`https://line.me/R/oaMessage/@920ooxaj/?register:${uid()}`}
             />
             <Box mb={2} />
             <Button
               fullWidth
               variant="outlined"
               component={Link}
-              to={`https://line.me/R/oaMessage/@920ooxaj/?register:${user.data?.uid}`}
+              href={`https://line.me/R/oaMessage/@920ooxaj/?register:${uid()}`}
               target="_blank"
               size="large"
-              startIcon={<PickIcon icon={"link"} />}
+              startIcon={<LinkIcon />}
             >
               Link
             </Button>

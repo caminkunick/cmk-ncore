@@ -15,7 +15,6 @@ import { useDropzone } from "react-dropzone";
 import { grey } from "@mui/material/colors";
 import { Image } from "@mui/icons-material";
 import { Core } from "..";
-import update from "react-addons-update";
 
 const CheckBoxContainer = styled(Box)({
   position: "absolute",

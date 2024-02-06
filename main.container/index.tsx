@@ -25,7 +25,6 @@ export const MainContainer = (props: MainContainerProps) => {
   });
   const [state, setState] = useState<MCContextTypes["state"]>({
     anchorProfile: null,
-    onFilePickerConfirm: null,
   });
 
   const store = {

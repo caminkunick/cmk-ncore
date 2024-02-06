@@ -8,7 +8,7 @@ const reject = (message: string, status: number = 400) =>
   Response.json({ message }, { status });
 
 export const ServerCoreApi = (req: Request, app: app.App) => {
-  return new Promise(async (res) => {
+  return new Promise<Response>(async (res) => {
     const authorization = req.headers.get("authorization")?.split(" ")[1];
     if (!authorization) return reject("No authorization header");
 

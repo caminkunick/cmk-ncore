@@ -85,7 +85,7 @@ export namespace Core {
     db: Firestore | null = null;
 
     sitename: string = "";
-    logo: ReactNode = null;
+    logo: string = "";
     profileMenu: ReactNode = null;
     startActions: ReactNode = null;
     endActions: ReactNode = null;
@@ -191,8 +191,8 @@ export namespace Core {
 
   // ANCHOR - connect
   export const connect =
-    <T extends ContextValue = ContextValue>(
-      Comp: ComponentType<T>,
+    <T extends {}>(
+      Comp: ComponentType<T & ContextValue>,
       app: FirebaseApp,
       options?: Partial<{
         theme: ThemeOptions;
@@ -276,7 +276,12 @@ export namespace Core {
             )}
           >
             <CssBaseline />
-            <Comp {...props} state={state} dispatch={dispatch} />
+            <Comp
+              {...props}
+              state={state}
+              dispatch={dispatch}
+              mobile={mobile}
+            />
             <Alerts />
             <Popup />
             <StockPicker

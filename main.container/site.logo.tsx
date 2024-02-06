@@ -1,6 +1,6 @@
 import { Box, BoxProps, styled } from "@mui/material";
 import * as React from "react";
-import { CoreContextTypes } from "../context";
+import { Core } from "..";
 
 const Root = styled(Box)<BoxProps & { ratio: number }>(({ ratio }) => ({
   height: 48,
@@ -15,7 +15,7 @@ const Root = styled(Box)<BoxProps & { ratio: number }>(({ ratio }) => ({
 export const SiteLogo = ({
   logo,
   ...props
-}: Omit<BoxProps, "children"> & Pick<CoreContextTypes, "logo">) => {
+}: Omit<BoxProps, "children"> & Pick<Core.State, "logo">) => {
   const [ratio, setRatio] = React.useState<number>(1);
 
   React.useEffect(() => {

@@ -1,8 +1,7 @@
 import { Breakpoint } from "@mui/material";
 import { createContext, useContext } from "react";
-import { CoreContextTypes } from "../context";
-import { MekFile } from "../Controller/file";
 import { RestrictProps } from "./restrict";
+import { Core } from "..";
 
 export interface MainContainerProps {
   children?: React.ReactNode;
@@ -32,18 +31,14 @@ export type MCContextTypes = MainContainerProps & {
   handleOpen: (key: string, open: boolean) => () => void;
   state: {
     anchorProfile: Element | null;
-    onFilePickerConfirm: null | ((file: MekFile) => void);
   };
   setState: React.Dispatch<React.SetStateAction<MCContextTypes["state"]>>;
-  user: CoreContextTypes["user"];
+  user: Core.State["user"];
 };
 
 export const MCContext = createContext<MCContextTypes>({
   children: null,
-  user: {
-    loading: true,
-    data: null,
-  },
+  user: "loading",
   dense: false,
   open: {
     sidebar: true,
@@ -53,7 +48,6 @@ export const MCContext = createContext<MCContextTypes>({
   handleOpen: () => () => {},
   state: {
     anchorProfile: null,
-    onFilePickerConfirm: null
   },
   setState: (data) => data,
 });
