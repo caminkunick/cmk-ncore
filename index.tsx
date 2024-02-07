@@ -56,6 +56,7 @@ export * from "./action.icon";
 export * from "./content.header";
 export * from "./dialog.compact";
 export * from "./feature.image";
+export * from "./map";
 export * from "./main.container";
 export * from "./popup";
 export * from "./save.button";
