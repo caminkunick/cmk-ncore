@@ -1,253 +1,189 @@
 "use client";
 
-import {
-  ComponentType,
-  Fragment,
-  HTMLAttributes,
-  useEffect,
-  useReducer,
-} from "react";
-import { MapContainer, Marker, TileLayer, useMap } from "react-leaflet";
-import styles from "./map.module.css";
 import clsx from "clsx";
-import "./index.css";
-import { LeafletMouseEvent } from "leaflet";
-import { Map as M } from "./map.doc";
-import { PopupWithLatLng } from "./popup";
+import styles from "./map.module.css";
+import React, { ComponentType, useEffect, useState } from "react";
+import "leaflet/dist/leaflet.css";
+import dynamic from "next/dynamic";
+import { MapTool as M } from "./map.tool";
+import { useMap } from "react-leaflet";
 
-class State {
-  anchor: null | Element = null;
-  lyrs: "h" | "m" | "p" | "r" | "s" | "t" | "y" = "m";
-
-  constructor(data?: Partial<State>) {
-    Object.assign(this, data);
+const MapContainer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.MapContainer),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
   }
+);
 
-  set<T extends keyof this>(field: T, value: this[T]): State {
-    return new State({ ...this, [field]: value });
+export const Marker = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Marker),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
   }
+);
 
-  static lyrsList: { value: State["lyrs"]; label: string }[] = [
-    { value: "h", label: "Roads only" },
-    { value: "m", label: "Standard Roadmap" },
-    { value: "p", label: "Terrain" },
-    { value: "r", label: "Somehow Altered Roadmap" },
-    { value: "s", label: "Satellite Only" },
-    { value: "t", label: "Terrain Only" },
-    { value: "y", label: "Hybrid" },
-  ];
+export const MapPopup = dynamic(() => import("react-leaflet").then((mod) => mod.Popup), {
+  ssr: false,
+  loading: () => <p>Loading...</p>,
+});
 
-  static reducer(
-    state: State,
-    action:
-      | { type: "lyrs"; value: string }
-      | { type: "anchor"; value: State["anchor"] }
-  ) {
-    switch (action.type) {
-      case "anchor":
-        return state.set("anchor", action.value);
-      case "lyrs":
-        return state.set("lyrs", action.value as State["lyrs"]);
-      default:
-        return state;
-    }
+export const Polyline = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polyline),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
   }
-}
+);
 
-// import { Box, BoxProps, Menu, MenuItem, styled } from "@mui/material";
-// import L from "leaflet";
-// import { ComponentType, useReducer } from "react";
-// import { Fragment, useEffect } from "react";
-// import {
-//   MapContainer,
-//   Marker,
-//   TileLayer,
-//   MapContainerProps,
-//   useMap,
-//   Polyline,
-//   Polygon,
-// } from "react-leaflet";
-// import { ActionIcon } from "..";
+export const Polygon = dynamic(
+  () => import("react-leaflet").then((mod) => mod.Polygon),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
+  }
+);
 
-// export type LeafletMapProps = {
-//   onMapClick?: (event: L.LeafletMouseEvent) => void;
-//   maps?: M.Document[];
-//   children?: React.ReactNode;
-// };
-// export const LeafletMap = ({ onMapClick, ...props }: LeafletMapProps) => {
-//   const [state, dispatch] = useReducer(
-//     LeafletState.reducer,
-//     new LeafletState()
-//   );
-//   const map = useMap();
+export const TileLayer = dynamic(
+  () => import("react-leaflet").then((mod) => mod.TileLayer),
+  {
+    ssr: false,
+    loading: () => <p>Loading...</p>,
+  }
+);
 
-//   useEffect(() => {
-//     const latLngs = M.queryBounds(props.maps ?? []);
-//     if (latLngs.length > 1) {
-//       const bounds = new L.LatLngBounds([]);
-//       latLngs.forEach((latLng) => bounds.extend(latLng));
-//       map.fitBounds(bounds, { padding: [24, 24] });
-//     } else if (latLngs.length > 0) {
-//       setTimeout(() => {
-//         if (latLngs[0]) {
-//           map.setView(latLngs[0], 16);
-//         }
-//       }, 500);
-//     }
+export * from "./map.tool";
+export * from "./marker.cat";
 
-//     map.addEventListener("click", (e) => onMapClick?.(e));
-//     return () => {
-//       map.removeEventListener("click");
-//     };
-//   }, [map, onMapClick, props.maps]);
-
-//   return (
-//     <Fragment>
-//       <TileLayer
-//         attribution='&copy; <a href="https://www.google.com/help/terms_maps/" target="_blank">Google Maps</a>'
-//         // attribution='&copy; <a href="https://www.openstreetmap.org/copyright">Google Maps</a> contributors'
-//         // url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-//         url={`http://{s}.google.com/vt/lyrs=${state.lyrs}&x={x}&y={y}&z={z}`}
-//         subdomains={["mt0", "mt1", "mt2", "mt3"]}
-//         key={`tile-${state.lyrs}`}
-//       />
-//       {props.maps?.map((item) => {
-//         switch (item.type) {
-//           case "route":
-//             return (
-//               <Polyline
-//                 positions={item.latLngs!}
-//                 color={item.color}
-//                 key={item.id}
-//               >
-//                 <PopupWithLatLng title={item.title} />
-//               </Polyline>
-//             );
-//           case "area":
-//             return (
-//               <Polygon
-//                 positions={item.latLngs!}
-//                 color={item.color}
-//                 fillOpacity={0.5}
-//                 key={item.id}
-//               >
-//                 <PopupWithLatLng title={item.title} />
-//               </Polygon>
-//             );
-//           case "marker":
-//             return (
-//               <Marker
-//                 position={item.latLng!}
-//                 icon={Icon(item.cat as M.Marker.CatType)}
-//                 key={item.id}
-//               >
-//                 <PopupWithLatLng title={item.title} latLng={item.latLng} />
-//               </Marker>
-//             );
-//           default:
-//             return null;
-//         }
-//       })}
-//       {props.children}
-//       <Box
-//         sx={{
-//           height: 48,
-//           position: "absolute",
-//           top: 8,
-//           right: 8,
-//           zIndex: 401,
-//         }}
-//       >
-//         <ActionIcon
-//           icon="ellipsis-v"
-//           color="primary"
-//           onClick={({ currentTarget }) =>
-//             dispatch({ type: "anchor", value: currentTarget })
-//           }
-//           sx={{
-//             backgroundColor: "#FFF8",
-//             color: "#333",
-//             "&:hover": { backgroundColor: "#FFFB" },
-//           }}
-//         />
-//         <Menu
-//           open={Boolean(state.anchor)}
-//           anchorEl={state.anchor}
-//           onClose={() => dispatch({ type: "anchor", value: null })}
-//           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-//           transformOrigin={{ vertical: "top", horizontal: "right" }}
-//         >
-//           {LeafletState.lyrsList.map((item) => (
-//             <MenuItem
-//               value={item.value}
-//               key={item.value}
-//               selected={state.lyrs === item.value}
-//               onClick={() => dispatch({ type: "lyrs", value: item.value })}
-//             >
-//               {item.label}
-//             </MenuItem>
-//           ))}
-//         </Menu>
-//       </Box>
-//     </Fragment>
-//   );
-// };
-
-const MapWrap =
-  <T extends {}>(Comp: ComponentType<T>) =>
-  (props: T) => {
+const mapConnect = <T extends {}>(Comp: ComponentType<T>) =>
+  React.memo((props: T) => {
     return (
-      <div {...props} className={clsx(styles.map)}>
-        <MapContainer
-          className={styles.container}
-          center={{ lat: 13.74574175868472, lng: 100.50150775714611 }}
-          zoom={13}
-        >
-          <Comp {...props} />
-        </MapContainer>
-      </div>
+      <MapContainer center={M.center} zoom={13} {...props}>
+        <Comp {...props} />
+      </MapContainer>
     );
-  };
+  });
 
-export type MapProps = HTMLAttributes<HTMLDivElement> & {
-  maps?: M.Document[];
-  onClick?: (e: LeafletMouseEvent) => void;
+export type MapProps = {
+  docs: M.Document[];
+  editor?: M.Document | null;
+  onChange?: (doc: M.Document) => void;
+  onLoad?: (map: L.Map) => void;
 };
-export const Map = MapWrap(({ onClick, ...props }: MapProps) => {
-  const [state, dispatch] = useReducer(State.reducer, new State());
+export const Map = mapConnect<MapProps>((props: MapProps) => {
   const map = useMap();
+  const [leaflet, setLeaflet] = useState<any | null>(null);
 
   useEffect(() => {
-    map.addEventListener("click", (e) => onClick?.(e));
-    return () => {
-      map.removeEventListener("click", (e) => onClick?.(e));
-    };
-  }, [map, onClick]);
+    props.onLoad?.(map);
+  }, [map]);
+
+  useEffect(() => {
+    import("leaflet").then((mod) => setLeaflet(mod.default));
+  }, []);
 
   return (
-    <Fragment>
-      <TileLayer
-        attribution='&copy; <a href="https://www.google.com/help/terms_maps/" target="_blank">Google Maps</a>'
-        url={`http://{s}.google.com/vt/lyrs=${state.lyrs}&x={x}&y={y}&z={z}`}
-        subdomains={["mt0", "mt1", "mt2", "mt3"]}
-        key={`tile-${state.lyrs}`}
-      />
-      {(props.maps ?? []).map((item) => {
-        switch (item.type) {
+    <div className={clsx(styles.map)}>
+      <TileLayer {...M.TilePropsOpen} />
+      {props.editor &&
+        ((doc) => {
+          switch (doc.type) {
+            case "marker":
+              return (
+                <Marker
+                  key={doc._id}
+                  position={doc.latLng}
+                  icon={leaflet ? M.Marker.Icon(leaflet, doc.cat) : undefined}
+                  draggable
+                  eventHandlers={{
+                    dragend: (e) =>
+                      props.onChange?.(doc.Set("latLng", e.target.getLatLng())),
+                  }}
+                />
+              );
+            case "route":
+              return (
+                <>
+                  {doc
+                    .LatLng()
+                    .decode()
+                    .map((latLng, i, latlngs) =>
+                      i > 0 ? (
+                        <Polyline
+                          key={`${doc._id}-${i}-${doc.color}`}
+                          positions={[latlngs[i - 1], latLng]}
+                          color={doc.color}
+                          eventHandlers={{
+                            dblclick: () => {},
+                          }}
+                        />
+                      ) : null
+                    )}
+                  {doc
+                    .LatLng()
+                    .decode()
+                    .map((latLng, i) => (
+                      <Marker
+                        key={`${doc._id}-${i}-${JSON.stringify(latLng)}`}
+                        position={latLng}
+                        icon={
+                          leaflet ? M.Route.Icon(leaflet, doc.color) : undefined
+                        }
+                        draggable
+                        eventHandlers={{
+                          dragend: (ev) => {
+                            props.onChange?.(
+                              doc.LatLng().indexChange(i, ev.target.getLatLng())
+                            );
+                          },
+                        }}
+                      />
+                    ))}
+                </>
+              );
+            default:
+              if (process.env.NODE_ENV === "development") {
+                console.log(doc);
+              }
+              return null;
+          }
+        })(props.editor)}
+      {props.docs.map((doc) => {
+        switch (doc.type) {
           case "marker":
             return (
               <Marker
-                position={item.latLng}
-                icon={M.Marker.Icon(item.cat)}
-                key={item.id}
+                key={doc._id}
+                position={doc.latLng}
+                icon={leaflet ? M.Marker.Icon(leaflet, doc.cat) : undefined}
               >
-                <PopupWithLatLng title={item.title} latLng={item.latLng} />
+                <MapPopup>
+                  <div>{doc.title}</div>
+                </MapPopup>
               </Marker>
             );
+          case "route":
+            return (
+              <Polyline
+                key={`${doc._id}-${map.getZoom()}`}
+                positions={doc.LatLng().decode()}
+                color={doc.color}
+              >
+                <MapPopup>
+                  <div>{doc.title}</div>
+                </MapPopup>
+              </Polyline>
+            );
           default:
+            if (process.env.NODE_ENV === "development") {
+              console.log(doc);
+            }
             return null;
         }
       })}
-    </Fragment>
+    </div>
   );
 });
+
+export default Map;

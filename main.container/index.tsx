@@ -37,14 +37,6 @@ export const MainContainer = (props: MainContainerProps) => {
     setState,
   };
 
-  useEffect(() => {
-    if (props.title) {
-      document.title = `${props.title} — ${process.env.NEXT_PUBLIC_SITE_NAME}`;
-    } else if (process.env.NODE_ENV === "development") {
-      console.log(`Please add props title to MainContainer`);
-    }
-  }, [props.title]);
-
   if (props.signInOnly) {
     if (user === "loading") {
       return <Loading />;

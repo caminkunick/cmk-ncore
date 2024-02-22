@@ -53,15 +53,17 @@ declare module "@mui/material/IconButton" {
 }
 
 export * from "./action.icon";
+export * from "./backlink";
 export * from "./content.header";
 export * from "./dialog.compact";
 export * from "./feature.image";
-export * from "./map";
 export * from "./main.container";
+export * from "./map";
 export * from "./popup";
 export * from "./save.button";
 export * from "./table.grid";
 export * from "./title.editor";
+export * from "./visibility.select";
 
 // SECTION - Core
 export namespace Core {
@@ -132,6 +134,11 @@ export namespace Core {
             throw new Error("User not logged in");
           }
           return this.user;
+        },
+        use: (callback: (user: User) => void) => {
+          if (this.user !== "loading" && this.user !== null) {
+            callback(this.user);
+          }
         },
       };
     }
@@ -240,7 +247,12 @@ export namespace Core {
                     info: { main: "#4285f4" },
                     neutral: { main: grey[500] },
                     background: {
-                      default: state.dark ? "#222222" : "#f9f9f9",
+                      default: state.dark ? "#37474F" : "#f9f9f9",
+                      paper: state.dark ? "#263238" : "#fff",
+                    },
+                    text: {
+                      primary: state.dark ? "#f9f9f9" : "#263238",
+                      secondary: state.dark ? "#f9f9f988" : "#26323888",
                     },
                     mode: state.dark ? "dark" : "light",
                   },
@@ -267,6 +279,7 @@ export namespace Core {
                       styleOverrides: {
                         root: {
                           minWidth: 36,
+                          color: "inherit",
                         },
                       },
                     },
